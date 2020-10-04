@@ -1,43 +1,62 @@
 <template>
-  <div>
-    <myheader></myheader>
-    <p v-if="msg.length > 0">
-      {{ msg }}
-    </p>
-    <p v-else>no text</p>
-    <input type="text" v-model="msg" />
-    <button @click="clear()">clear</button>
+  <div id="app">
+    <h1>簡易TODOアプリ</h1>
+    <input v-model="message" />
+    <button :disabled="isDisabled" @click="add">追加</button>
+    <br />
+    <div v-if="todos.length === 0">タスクはありません</div>
+    <div v-else>
+      <ul>
+        <TaskCard
+          v-for="todo in todos"
+          :id="todo.id"
+          :key="todo.id"
+          :text="todo.text"
+          @remove-task="remove"
+        />
+      </ul>
+    </div>
   </div>
 </template>
 
+
 <script>
-import myheader from "./components/myheader";
+import TaskCard from "./components/TaskCard";
+
 export default {
+  name: "App",
   components: {
-    myheader,
+    TaskCard,
   },
-  data() {
-    return {
-      msg: "Hello World!",
-    };
-  },
+  data: () => ({
+    message: "Spark joy!",
+    todos: [
+      { id: 1, text: "ときめき" },
+      { id: 2, text: "メモリアル" },
+    ],
+  }),
   methods: {
-    clear() {
-      this.msg = "";
+    onInput(event) {
+      const text = event.target.value;
+      this.message = text;
+    },
+    add() {
+      const newTodo = {
+        id: this.todos.length + 1,
+        text: this.message,
+      };
+      this.todos.push(newTodo);
+      this.message = "";
+    },
+    remove(id) {
+      this.todos = this.todos.filter((todo) => todo.id !== id);
     },
   },
-  created () {
-    fetch('http://www.geonames.org/postalCodeLookupJSON?postalcode=10504&country=US')
-    .then( response => {
-      return response.json()
-    })
-    .then( json => {
-      this.msg = json.postalcodes[0].adminName1
-    })
-    .catch( (err) => {
-      this.msg = err // エラー処理
-    });
-  }
+  computed: {
+    isDisabled() {
+      return this.message.length === 0;
+    },
+  },
 };
 </script>
 
